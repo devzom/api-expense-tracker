@@ -1,0 +1,35 @@
+{
+  "name": "expense-tracker-api",
+  "version": "1.0.0",
+  "description": "Expense Tracking API built with Hono",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts",
+    "lint": "eslint src/**/*.ts",
+    "test": "vitest"
+  },
+  "keywords": [
+    "expense",
+    "tracking",
+    "api",
+    "hono"
+  ],
+  "author": "devzom",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.2.1",
+    "hono": "^4.6.17",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "eslint": "9.18.0",
+    "prisma": "^6.2.1",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.2"
+  }
+}
