@@ -7,6 +7,25 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// User
+
+model User {
+  id              String        @id @default(uuid())
+  email           String        @unique
+  name            String        @db.VarChar(100)
+  surname         String?       @db.VarChar(100)
+  avatar          String?       @db.Text
+  defaultCurrency Currency      @default(USD) @map("default_currency")
+  expenses        Expense[]
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  savedReports    SavedReport[]
+
+  @@map("users")
+}
+
+// Expenses
+
 enum ExpenseType {
   EXPENSE
   INCOME
@@ -68,16 +87,30 @@ model PaymentMethod {
   @@map("payment_methods")
 }
 
-model User {
-  id              String    @id @default(uuid())
-  email           String    @unique
-  name            String    @db.VarChar(100)
-  surname         String?   @db.VarChar(100)
-  avatar          String?   @db.Text
-  defaultCurrency Currency  @default(USD) @map("default_currency")
-  expenses        Expense[]
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+// Reports
 
-  @@map("users")
+enum ReportType {
+  WEEKLY_SUMMARY
+  MONTHLY_SUMMARY
+  CATEGORY_BREAKDOWN
+}
+
+enum Schedule {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+model SavedReport {
+  id        String     @id @default(uuid())
+  name      String
+  type      ReportType
+  filters   Json? // Stored report filters
+  schedule  Schedule? // For automated report generation
+  userId    String     @map("user_id")
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("saved_reports")
 }
