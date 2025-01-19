@@ -1,8 +1,10 @@
-# Expense Tracker API
+# API - Expense Tracker
 
 ## Overview
 
-A robust expense tracking API built with Hono, Prisma, and TypeScript.
+### Learning purpose
+
+Expense tracking API built with Hono, SQLite + Prisma, and TypeScript and basic Bearer.
 
 ## Features
 
@@ -15,8 +17,8 @@ A robust expense tracking API built with Hono, Prisma, and TypeScript.
 
 - [x] Reporting capabilities
 - [x] User customization options
+- [x] Flexible categorization system
 - [ ] Budget tracking and management
-- [ ] Flexible tagging system
 - [ ] Recurring expense automation
 - [ ] Savings goals tracking
 - [ ] Receipt/document management
@@ -24,8 +26,10 @@ A robust expense tracking API built with Hono, Prisma, and TypeScript.
 
 ## Prerequisites
 
-- Node.js (v18+)
+- Node.js
 - PNPM
+- SQLite
+- Prisma CLI
 
 ## Setup
 
@@ -40,13 +44,17 @@ A robust expense tracking API built with Hono, Prisma, and TypeScript.
    ```bash
     prisma migrate dev
    ```
+4. Seed DB by dummy data
+   ```bash
+      pnpm seed
+   ```
 
 ## Running the Application
 
 - Development mode: `pnpm run dev`
 - Production build: `pnpm run build && pnpm start`
 
-## API Endpoints
+## A few examples of endpoints
 
 - `POST /users`: Create a new user
 - `POST /expenses`: Create an expense
@@ -60,6 +68,7 @@ A robust expense tracking API built with Hono, Prisma, and TypeScript.
 - Prisma
 - TypeScript
 - Zod
+- SQLite
 
 ## License
 
