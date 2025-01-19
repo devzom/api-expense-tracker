@@ -21,11 +21,12 @@ enum Currency {
 
 model Expense {
   id              String         @id @default(uuid())
+  date            DateTime       @default(now())
   amount          Float
   currency        Currency       @default(USD)
   type            ExpenseType    @default(EXPENSE)
   description     String?        @db.Text
-  category        Category?      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  category        Category?      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId      String?        @map("category_id")
   paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
   paymentMethodId String?        @map("payment_method_id")
@@ -37,6 +38,7 @@ model Expense {
   @@index([categoryId])
   @@index([paymentMethodId])
   @@index([userId])
+  @@index([date])
   @@index([type])
   @@map("expenses")
 }
