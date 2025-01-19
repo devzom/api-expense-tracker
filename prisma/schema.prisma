@@ -1,6 +1,6 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 generator client {
@@ -10,15 +10,15 @@ generator client {
 // User
 
 model User {
-  id              String           @id @default(uuid())
-  email           String           @unique
-  name            String           @db.VarChar(100)
-  surname         String?          @db.VarChar(100)
-  avatar          String?          @db.Text
-  defaultCurrency Currency         @default(USD) @map("default_currency")
+  id              String          @id @default(uuid())
+  email           String          @unique
+  name            String
+  surname         String?
+  avatar          String?
+  defaultCurrency Currency        @default(USD) @map("default_currency")
   expenses        Expense[]
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
   savedReports    SavedReport[]
   preferences     UserPreferences?
 
@@ -40,7 +40,7 @@ enum WeekDay {
 model UserPreferences {
   id                   String   @id @default(uuid())
   userId               String   @unique @map("user_id")
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User     @relation(fields: [userId], references: [id])
   notificationsEnabled Boolean  @default(true)
   weekStartsOn         WeekDay  @default(MONDAY)
   language             String   @default("en")
@@ -73,30 +73,26 @@ model Expense {
   amount          Float
   currency        Currency       @default(USD)
   type            ExpenseType    @default(EXPENSE)
-  description     String?        @db.Text
-  category        Category?      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  description     String?
+  category        Category?      @relation(fields: [categoryId], references: [id])
   categoryId      String?        @map("category_id")
-  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
   paymentMethodId String?        @map("payment_method_id")
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id])
   userId          String         @map("user_id")
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 
-  @@index([categoryId])
-  @@index([paymentMethodId])
   @@index([userId])
-  @@index([date])
-  @@index([type])
   @@map("expenses")
 }
 
 model Category {
   id          String    @id @default(uuid())
   name        String    @unique
-  description String?   @db.Text
-  color       String?   @db.VarChar(7) // For hex color codes
-  icon        String?   @db.VarChar(50)
+  description String?
+  color       String?
+  icon        String?
   expenses    Expense[]
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -107,7 +103,7 @@ model Category {
 model PaymentMethod {
   id        String    @id @default(uuid())
   name      String    @unique
-  icon      String?   @db.VarChar(50)
+  icon      String?
   isActive  Boolean   @default(true) @map("is_active")
   expenses  Expense[]
   createdAt DateTime  @default(now()) @map("created_at")

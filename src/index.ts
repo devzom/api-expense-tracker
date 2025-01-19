@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
-import { withAccelerate } from "@prisma/extension-accelerate";
 
 // Validation schemas
 const ExpenseSchema = z.object({
@@ -21,7 +20,7 @@ const UserPreferencesSchema = z.object({
   timeFormat: z.enum(['12h', '24h']).optional(),
 });
 
-const prisma = new PrismaClient().$extends(withAccelerate());
+const prisma = new PrismaClient();
 
 const app = new Hono<{
   Bindings: {

@@ -25,11 +25,10 @@
   "author": "devzom",
   "license": "ISC",
   "dependencies": {
-    "@hono/node-server": "^1.13.7",
+    "@hono/node-server": "^1.8.2",
     "@prisma/client": "^6.2.1",
-    "@prisma/extension-accelerate": "^1.2.1",
-    "hono": "^4.6.17",
-    "zod": "^3.24.1"
+    "hono": "^4.0.3",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",

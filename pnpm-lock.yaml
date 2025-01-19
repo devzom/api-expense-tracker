@@ -9,19 +9,16 @@ importers:
   .:
     dependencies:
       '@hono/node-server':
-        specifier: ^1.13.7
+        specifier: ^1.8.2
         version: 1.13.7(hono@4.6.17)
       '@prisma/client':
         specifier: ^6.2.1
         version: 6.2.1(prisma@6.2.1)
-      '@prisma/extension-accelerate':
-        specifier: ^1.2.1
-        version: 1.2.1(@prisma/client@6.2.1(prisma@6.2.1))
       hono:
-        specifier: ^4.6.17
+        specifier: ^4.0.3
         version: 4.6.17
       zod:
-        specifier: ^3.24.1
+        specifier: ^3.22.4
         version: 3.24.1
     devDependencies:
       '@types/node':
@@ -593,12 +590,6 @@ packages:
 
   '@prisma/engines@6.2.1':
     resolution: {integrity: sha512-lTBNLJBCxVT9iP5I7Mn6GlwqAxTpS5qMERrhebkUhtXpGVkBNd/jHnNJBZQW4kGDCKaQg/r2vlJYkzOHnAb7ZQ==}
-
-  '@prisma/extension-accelerate@1.2.1':
-    resolution: {integrity: sha512-QicnMeyqL226ilT3vvRsFAqPeIdqHGKR4c25CoK5zZ1tNIv8egfgpD1gCKqOGmfAz0pIKQnMuJU3eNg9KItC7A==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      '@prisma/client': '>=4.16.1'
 
   '@prisma/fetch-engine@6.2.1':
     resolution: {integrity: sha512-OO7O9d6Mrx2F9i+Gu1LW+DGXXyUFkP7OE5aj9iBfA/2jjDXEJjqa9X0ZmM9NZNo8Uo7ql6zKm6yjDcbAcRrw1A==}
@@ -1827,10 +1818,6 @@ snapshots:
       '@prisma/engines-version': 6.2.0-14.4123509d24aa4dede1e864b46351bf2790323b69
       '@prisma/fetch-engine': 6.2.1
       '@prisma/get-platform': 6.2.1
-
-  '@prisma/extension-accelerate@1.2.1(@prisma/client@6.2.1(prisma@6.2.1))':
-    dependencies:
-      '@prisma/client': 6.2.1(prisma@6.2.1)
 
   '@prisma/fetch-engine@6.2.1':
     dependencies:
