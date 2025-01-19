@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { z } from "zod";
-import { Currency, ExpenseType, PrismaClient, WeekDay } from "@prisma/client";
+import { Currency, ExpenseType, PrismaClient, WeekDay, SortOrder } from "@prisma/client";
 import { bearerAuth } from 'hono/bearer-auth'
 
 const token = 'trackerToken'
@@ -25,6 +25,21 @@ const UserPreferencesSchema = z.object({
   language: z.string().min(2).max(5).optional(),
   dateFormat: z.string().min(8).max(10).optional(),
   timeFormat: z.enum(['12h', '24h']).optional(),
+});
+
+// Query parameters validation schema
+const ExpenseQuerySchema = z.object({
+  page: z.string().regex(/^\d+$/).transform(Number).default('1'),
+  limit: z.string().regex(/^\d+$/).transform(Number).default('10'),
+  sortBy: z.enum(['date', 'amount', 'createdAt']).default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  category: z.string().optional(),
+  type: z.nativeEnum(ExpenseType).optional().default('expense'),
+  currency: z.nativeEnum(Currency).optional(),
+  minAmount: z.string().regex(/^\d+$/).transform(Number).optional(),
+  maxAmount: z.string().regex(/^\d+$/).transform(Number).optional(),
 });
 
 const prisma = new PrismaClient({ log: ["query", "error"] });
@@ -194,9 +209,53 @@ app.get("/expenses/users/:userId", async (c) => {
   const userId = c.req.param("userId");
 
   try {
+    const query = c.req.query();
+    const {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      startDate,
+      endDate,
+      category,
+      type,
+      currency,
+      minAmount,
+      maxAmount
+    } = ExpenseQuerySchema.parse(query);
+
+    // calculate pagination
+    const skip = (page - 1) * limit;
+
+    // build where clause for filtering
+    let whereClause: any = { userId };
+
+    if (type) whereClause.type = type;
+    if (currency) whereClause.currency = currency;
+    if (category) whereClause.category = { name: category };
+
+    if (minAmount || maxAmount) {
+      whereClause.amount = {
+        ...(minAmount && { gte: minAmount }),
+        ...(maxAmount && { lte: maxAmount })
+      };
+    }
+
+    if (startDate || endDate) {
+      whereClause.date = {
+        ...(startDate && { gte: new Date(startDate) }),
+        ...(endDate && { lte: new Date(endDate) })
+      };
+    }
+
+    // paginated and filtered expenses
     const expenses = await prisma.expense.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
+      where: whereClause,
+      orderBy: {
+        [sortBy]: sortOrder
+      },
+      skip,
+      take: limit,
       select: {
         id: true,
         date: true,
@@ -207,21 +266,53 @@ app.get("/expenses/users/:userId", async (c) => {
         category: {
           select: {
             name: true,
-            color: true,
-            icon: true
           }
         },
         paymentMethod: {
           select: {
             name: true,
-            icon: true
           }
         }
       }
     });
 
-    return c.json(expenses);
+    const paginationTotal = await prisma.expense.count({
+      where: whereClause
+    });
+
+    const pagination = {
+      total: paginationTotal,
+      page,
+      limit,
+      totalPages: Math.ceil(paginationTotal / limit),
+      hasMore: skip + expenses.length < paginationTotal
+    }
+
+    const filters = {
+      startDate,
+      endDate,
+      category,
+      type,
+      currency,
+      minAmount,
+      maxAmount
+    }
+
+    const sorting = {
+      sortBy,
+      sortOrder
+    }
+
+    return c.json({
+      data: expenses,
+      pagination,
+      filters,
+      sorting
+    });
+
   } catch (error) {
+    if (error instanceof z.ZodError) return c.json({ error: "Invalid query parameters", details: error.errors }, 400);
+
     return c.json({ error: "Failed to fetch expenses" }, 500);
   }
 });
@@ -252,14 +343,11 @@ app.get("/users/:userId/preferences", async (c) => {
   const userId = c.req.param("userId");
 
   try {
-    // check if user exists
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
 
-    if (!user) {
-      return c.json({ error: "User not found" }, 404);
-    }
+    if (!user) return c.json({ error: "User not found" }, 404);
 
     const preferences = await prisma.userPreferences.findUnique({
       where: { userId },
@@ -278,9 +366,8 @@ app.get("/users/:userId/preferences", async (c) => {
 
     return c.json(preferences);
   } catch (error) {
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 500);
-    }
+    if (error instanceof Error) return c.json({ error: error.message }, 500);
+
     return c.json({ error: "An unexpected error occurred" }, 500);
   }
 });
@@ -315,12 +402,9 @@ app.patch("/users/:userId/preferences", async (c) => {
 
     return c.json(updatedPreferences);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: "Invalid preferences data", details: error.errors }, 400);
-    }
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 500);
-    }
+    if (error instanceof z.ZodError) return c.json({ error: "Invalid preferences data", details: error.errors }, 400);
+    if (error instanceof Error) return c.json({ error: error.message }, 500);
+
     return c.json({ error: "An unexpected error occurred" }, 500);
   }
 });
