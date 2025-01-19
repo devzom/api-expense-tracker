@@ -6,12 +6,14 @@ const app = new Hono(
     { strict: true }
 );
 
+app.use("*", resourceAccessMiddleware);
+
+app.get("/:id", getExpense);
 app.post("/", createExpense);
 app.put("/:id", updateExpense);
 app.delete("/:id", deleteExpense);
-app.get("/:id", getExpense);
 
 // Get user expenses with pagination and filters
-app.get("/users/:userId", resourceAccessMiddleware, getUserExpenses);
+app.get("/users/:user", getUserExpenses);
 
 export default app;

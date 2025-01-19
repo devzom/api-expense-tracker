@@ -2,14 +2,17 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import expenseRoutes from "./routes/expense.routes";
 import userRoutes from "./routes/user.routes";
+import { authMiddleware } from "./middlewares/auth";
 
 const app = new Hono(
   { strict: true }
 );
 
-app.get("/", (c) => c.text("healthcheck"));
+app.get("/", (c) => c.text("Healthcheck of expenses-tracker!"));
 
-app.route('/expenses', expenseRoutes)
+app.use("*", authMiddleware);
+
 app.route('/users', userRoutes)
+app.route('/expenses', expenseRoutes)
 
 serve(app);
