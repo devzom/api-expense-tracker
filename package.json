@@ -9,7 +9,7 @@
     "build": "tsup src/index.ts",
     "lint": "eslint src/**/*.ts",
     "test": "vitest",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
 
   },
   "keywords": [
