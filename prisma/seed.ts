@@ -60,7 +60,14 @@ async function main() {
                 email: 'alice@prisma.io',
                 name: 'Alice',
                 preferences: {
-                    create: {}
+                    create: {
+                        notificationsEnabled: true,
+                        weekStartsOn: 'monday',
+                        language: 'en',
+                        dateFormat: 'dd/MM/yyyy',
+                        timeFormat: '24h',
+                        currency: 'EUR'
+                    }
                 },
                 expenses: {
                     create: [

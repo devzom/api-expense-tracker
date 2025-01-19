@@ -5,14 +5,14 @@ meta {
 }
 
 get {
-  url: http://localhost:3000/expenses/users/{{userId}}?category=food&sortOrder=desc
+  url: http://localhost:3000/expenses/users/{{userId}}?sortOrder=desc
   body: json
   auth: inherit
 }
 
 params:query {
-  category: food
   sortOrder: desc
+  ~category: food
   ~minAmount: 10
   ~sortBy: amount
   ~type: expense
