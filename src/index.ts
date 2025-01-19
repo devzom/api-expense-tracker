@@ -2,6 +2,10 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { z } from "zod";
 import { Currency, ExpenseType, PrismaClient, WeekDay } from "@prisma/client";
+import { bearerAuth } from 'hono/bearer-auth'
+
+const token = 'trackerToken'
+const privilegedMethods = ['POST', 'PUT', 'PATCH', 'DELETE']
 
 // Validation schemas
 const ExpenseSchema = z.object({
@@ -25,17 +29,14 @@ const UserPreferencesSchema = z.object({
 
 const prisma = new PrismaClient({ log: ["query", "error"] });
 
-const app = new Hono<{
-  Bindings: {
-    DATABASE_URL: string;
-    JWT_SECRET: string;
-  };
-  Variables: {
-    userId: string;
-  };
-}>(
+const app = new Hono(
   { strict: true }
 );
+
+app.on('*', '*', async (c, next) => {
+  const bearer = bearerAuth({ token })
+  return bearer(c, next)
+})
 
 app.get("/", (c) => c.text("Healthcheck of expenses-tracker!"));
 
