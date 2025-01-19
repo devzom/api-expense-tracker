@@ -8,9 +8,10 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsup src/index.ts",
     "lint": "eslint src/**/*.ts",
-    "migrate": "prisma generate && prisma migrate dev",
     "test": "vitest",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "migrate": "prisma generate && prisma migrate dev",
+    "reset": "prisma migrate reset"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

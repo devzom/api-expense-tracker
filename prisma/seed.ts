@@ -17,23 +17,41 @@ async function main() {
             create: {
                 email: 'alice@prisma.io',
                 name: 'Alice',
+                preferences: {
+                    create: {}
+                },
+                expenses: {
+                    create: {
+                        amount: 10.99,
+                        description: 'Pizza',
+                        date: new Date(),
+                    }
+                }
             },
         })
     ])
 
     const paymentsMethod = await Promise.all([
         prisma.paymentMethod.upsert({
-            where: { name: 'Card' },
+            where: { name: 'card' },
             update: {},
             create: {
-                name: 'Card',
+                name: 'card',
             },
         }),
         prisma.paymentMethod.upsert({
-            where: { name: 'Cash' },
+            where: { name: 'cash' },
             update: {},
             create: {
-                name: 'Cash',
+                name: 'cash',
+            },
+        }),
+        prisma.paymentMethod.upsert({
+            where: { name: 'transfer' },
+            update: {},
+            create: {
+                name: 'transfer',
+                isActive: false
             },
         })
     ])
