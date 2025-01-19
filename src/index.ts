@@ -52,7 +52,25 @@ app.get("/expenses/:userId", async (c) => {
   try {
     const expenses = await prisma.expense.findMany({
       where: { userId },
-      orderBy: { date: "desc" },
+      orderBy: { createdAt: "desc" },
+      omit: {
+        paymentMethodId: true,
+        categoryId: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true
+      },
+      include: {
+        category: {
+          select: {
+            name: true
+          }
+        }, paymentMethod: {
+          select: {
+            name: true
+          }
+        }
+      },
     });
 
     return c.json(expenses);
@@ -66,11 +84,11 @@ app.put("/expenses/:id", async (c) => {
 
   try {
     const body = await c.req.json();
-    const validatedData = ExpenseSchema.partial().parse(body);
+    // const validatedData = ExpenseSchema.partial().parse(body);
 
     const expense = await prisma.expense.update({
       where: { id },
-      data: validatedData,
+      data: body,
     });
 
     return c.json(expense);
