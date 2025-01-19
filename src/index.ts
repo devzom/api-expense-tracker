@@ -6,10 +6,13 @@ import { PrismaClient } from "@prisma/client";
 // Validation schemas
 const ExpenseSchema = z.object({
   amount: z.number().positive(),
-  description: z.string().max(100),
-  category: z.string().min(3).max(50),
+  description: z.string().optional(),
+  category: z.string().min(4),
+  paymentMethod: z.enum(['cash', 'card', 'transfer']).optional(),
   userId: z.string().uuid(),
-  paymentMethod: z.string().uuid().optional(),
+  currency: z.enum(['USD', 'EUR', 'GBP', 'PLN']).optional(),
+  type: z.enum(['EXPENSE', 'INCOME']).optional(),
+  date: z.string().datetime().optional()
 });
 
 const UserPreferencesSchema = z.object({
@@ -39,16 +42,71 @@ app.get("/", (c) => c.text("Healthcheck of expenses-tracker!"));
 app.post("/expenses", async (c) => {
   try {
     const body = await c.req.json();
-    // const validatedData = ExpenseSchema.parse(body);
+    const validatedData = ExpenseSchema.parse(body);
+
+    // Find or create category
+    const category = await prisma.category.upsert({
+      where: { name: validatedData.category },
+      create: { name: validatedData.category },
+      update: {}
+    });
+
+    // Find payment method if provided
+    let paymentMethod = null;
+    if (validatedData.paymentMethod) {
+      paymentMethod = await prisma.paymentMethod.findUnique({
+        where: { name: validatedData.paymentMethod }
+      });
+
+      if (!paymentMethod) {
+        return c.json({ error: `Payment method '${validatedData.paymentMethod}' not found` }, 400);
+      }
+    }
 
     const expense = await prisma.expense.create({
-      data: body,
+      data: {
+        amount: validatedData.amount,
+        description: validatedData.description,
+        currency: validatedData.currency || "USD",
+        type: validatedData.type || "EXPENSE",
+        date: validatedData.date ? new Date(validatedData.date) : undefined,
+        category: {
+          connect: { id: category.id }
+        },
+        ...(paymentMethod && {
+          paymentMethod: {
+            connect: { id: paymentMethod.id }
+          }
+        }),
+        user: {
+          connect: { id: validatedData.userId }
+        }
+      },
+      include: {
+        category: {
+          select: {
+            name: true,
+            color: true,
+            icon: true
+          }
+        },
+        paymentMethod: {
+          select: {
+            name: true,
+            icon: true
+          }
+        }
+      }
     });
 
     return c.json(expense, 201);
   } catch (error) {
-    return c.body(
-      error instanceof Error ? error.message : "Unknown error"
+    if (error instanceof z.ZodError) {
+      return c.json({ error: "Invalid expense data", details: error.errors }, 400);
+    }
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      500
     );
   }
 });
