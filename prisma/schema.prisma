@@ -12,24 +12,33 @@ model Expense {
   date            DateTime       @default(now())
   amount          Float
   description     String?
-  category        Category       @relation(fields: [categoryId], references: [id])
-  categoryId      String
-  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
-  paymentMethodId String
-  userId          String
-  user            User           @relation(fields: [userId], references: [id])
+  category        Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId      String         @map("category_id")
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  paymentMethodId String?        @map("payment_method_id")
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String         @map("user_id")
+
+  @@index([categoryId])
+  @@index([paymentMethodId])
+  @@index([userId])
+  @@map("expenses")
 }
 
 model Category {
-  id      String    @id @default(uuid())
-  name    String    @unique
-  expense Expense[]
+  id       String    @id @default(uuid())
+  name     String    @unique
+  expenses Expense[]
+
+  @@map("categories")
 }
 
 model PaymentMethod {
-  id      String    @id @default(uuid())
-  name    String    @unique
-  expense Expense[]
+  id       String    @id @default(uuid())
+  name     String    @unique
+  expenses Expense[]
+
+  @@map("payment_methods")
 }
 
 model User {
@@ -38,4 +47,6 @@ model User {
   name     String
   surname  String?
   expenses Expense[]
+
+  @@map("users")
 }
