@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
+import { Currency, ExpenseType, PrismaClient, WeekDay } from "@prisma/client";
 
 // Validation schemas
 const ExpenseSchema = z.object({
@@ -10,14 +10,14 @@ const ExpenseSchema = z.object({
   category: z.string().min(4),
   paymentMethod: z.enum(['cash', 'card', 'transfer']).optional(),
   userId: z.string().uuid(),
-  currency: z.enum(['USD', 'EUR', 'GBP', 'PLN']).optional(),
-  type: z.enum(['EXPENSE', 'INCOME']).optional(),
+  currency: z.nativeEnum(Currency).optional(),
+  type: z.nativeEnum(ExpenseType).optional(),
   date: z.string().datetime().optional()
 });
 
 const UserPreferencesSchema = z.object({
   notificationsEnabled: z.boolean().optional(),
-  weekStartsOn: z.enum(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']).optional(),
+  weekStartsOn: z.nativeEnum(WeekDay).optional(),
   language: z.string().min(2).max(5).optional(),
   dateFormat: z.string().min(8).max(10).optional(),
   timeFormat: z.enum(['12h', '24h']).optional(),
@@ -36,7 +36,6 @@ const app = new Hono<{
 }>();
 
 app.get("/", (c) => c.text("Healthcheck of expenses-tracker!"));
-
 
 /////// Expenses 
 app.post("/expenses", async (c) => {
@@ -86,15 +85,12 @@ app.post("/expenses", async (c) => {
         category: {
           select: {
             name: true,
-            color: true,
-            icon: true
           }
         },
         paymentMethod: {
           select: {
             name: true,
-            icon: true
-          }
+          },
         }
       }
     });
@@ -108,42 +104,6 @@ app.post("/expenses", async (c) => {
       { error: error instanceof Error ? error.message : "Unknown error" },
       500
     );
-  }
-});
-
-app.get("/expenses/:userId", async (c) => {
-  const userId = c.req.param("userId");
-
-  try {
-    const expenses = await prisma.expense.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        date: true,
-        amount: true,
-        currency: true,
-        type: true,
-        description: true,
-        category: {
-          select: {
-            name: true,
-            color: true,
-            icon: true
-          }
-        },
-        paymentMethod: {
-          select: {
-            name: true,
-            icon: true
-          }
-        }
-      }
-    });
-
-    return c.json(expenses);
-  } catch (error) {
-    return c.json({ error: "Failed to fetch expenses" }, 500);
   }
 });
 
@@ -182,6 +142,84 @@ app.delete("/expenses/:id", async (c) => {
       { error: error instanceof Error ? error.message : "Unknown error" },
       500
     );
+  }
+});
+
+app.get("/expenses/:id", async (c) => {
+  const id = c.req.param("id");
+
+  try {
+    const expense = await prisma.expense.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        date: true,
+        amount: true,
+        currency: true,
+        type: true,
+        description: true,
+        category: {
+          select: {
+            name: true,
+            color: true,
+            icon: true
+          }
+        },
+        paymentMethod: {
+          select: {
+            name: true,
+            icon: true
+          }
+        }
+      }
+    });
+
+    if (!expense) {
+      return c.json({ error: "Expense not found" }, 404);
+    }
+
+    return c.json(expense);
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      500
+    );
+  }
+});
+
+app.get("/expenses/users/:userId", async (c) => {
+  const userId = c.req.param("userId");
+
+  try {
+    const expenses = await prisma.expense.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        date: true,
+        amount: true,
+        currency: true,
+        type: true,
+        description: true,
+        category: {
+          select: {
+            name: true,
+            color: true,
+            icon: true
+          }
+        },
+        paymentMethod: {
+          select: {
+            name: true,
+            icon: true
+          }
+        }
+      }
+    });
+
+    return c.json(expenses);
+  } catch (error) {
+    return c.json({ error: "Failed to fetch expenses" }, 500);
   }
 });
 
