@@ -23,7 +23,7 @@ const UserPreferencesSchema = z.object({
   timeFormat: z.enum(['12h', '24h']).optional(),
 });
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ log: ["query", "error"] });
 
 const app = new Hono<{
   Bindings: {
@@ -33,7 +33,9 @@ const app = new Hono<{
   Variables: {
     userId: string;
   };
-}>();
+}>(
+  { strict: true }
+);
 
 app.get("/", (c) => c.text("Healthcheck of expenses-tracker!"));
 
