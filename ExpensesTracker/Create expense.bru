@@ -1,0 +1,20 @@
+meta {
+  name: Create expense
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3000/expenses
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": "{{userId}}",
+    "category": "bills",
+    "amount": 3.93,
+    "description": ""
+  }
+}
