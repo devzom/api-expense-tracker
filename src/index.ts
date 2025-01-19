@@ -338,6 +338,14 @@ app.post("/users", async (c) => {
   }
 });
 
+
+app.get('/users', async (c) => {
+  const users = await prisma.user.findMany()
+
+  return c.json(users)
+})
+
+
 // Get user preferences
 app.get("/users/:userId/preferences", async (c) => {
   const userId = c.req.param("userId");
