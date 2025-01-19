@@ -9,22 +9,6 @@ async function main() {
             create: {
                 email: 'bob@prisma.io',
                 name: 'Bob',
-                expenses: {
-                    create: {
-                        amount: 100,
-                        description: 'Pizza',
-                        category: {
-                            connect: {
-                                name: 'food'
-                            }
-                        },
-                        paymentMethod: {
-                            connect: {
-                                name: 'Card'
-                            }
-                        }
-                    }
-                },
             }
         }),
         prisma.user.upsert({
@@ -70,9 +54,6 @@ async function main() {
             },
         })
     ])
-
-
-
 
     console.log(users, paymentsMethod, expensesCategories)
 }

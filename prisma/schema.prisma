@@ -10,18 +10,47 @@ generator client {
 // User
 
 model User {
-  id              String        @id @default(uuid())
-  email           String        @unique
-  name            String        @db.VarChar(100)
-  surname         String?       @db.VarChar(100)
-  avatar          String?       @db.Text
-  defaultCurrency Currency      @default(USD) @map("default_currency")
+  id              String           @id @default(uuid())
+  email           String           @unique
+  name            String           @db.VarChar(100)
+  surname         String?          @db.VarChar(100)
+  avatar          String?          @db.Text
+  defaultCurrency Currency         @default(USD) @map("default_currency")
   expenses        Expense[]
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
   savedReports    SavedReport[]
+  preferences     UserPreferences?
 
   @@map("users")
+}
+
+// Preferences
+
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model UserPreferences {
+  id                   String   @id @default(uuid())
+  userId               String   @unique @map("user_id")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notificationsEnabled Boolean  @default(true)
+  weekStartsOn         WeekDay  @default(MONDAY)
+  language             String   @default("en")
+  currency             Currency @default(USD) @map("default_currency")
+  dateFormat           String   @default("MM/DD/YYYY")
+  timeFormat           String   @default("24h")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("user_preferences")
 }
 
 // Expenses

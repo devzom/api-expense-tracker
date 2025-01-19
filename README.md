@@ -14,13 +14,13 @@ A robust expense tracking API built with Hono, Prisma, and TypeScript.
 ### Planned Features
 
 - [x] Reporting capabilities
+- [x] User customization options
 - [ ] Budget tracking and management
 - [ ] Flexible tagging system
 - [ ] Recurring expense automation
 - [ ] Savings goals tracking
 - [ ] Receipt/document management
 - [ ] Expense sharing capabilities
-- [ ] User customization options
 
 ## Prerequisites
 

@@ -4,13 +4,21 @@ import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
-// Expense validation schema
+// Validation schemas
 const ExpenseSchema = z.object({
   amount: z.number().positive(),
   description: z.string().max(100),
   category: z.string().min(3).max(50),
   userId: z.string().uuid(),
   paymentMethod: z.string().uuid().optional(),
+});
+
+const UserPreferencesSchema = z.object({
+  notificationsEnabled: z.boolean().optional(),
+  weekStartsOn: z.enum(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']).optional(),
+  language: z.string().min(2).max(5).optional(),
+  dateFormat: z.string().min(8).max(10).optional(),
+  timeFormat: z.enum(['12h', '24h']).optional(),
 });
 
 const prisma = new PrismaClient().$extends(withAccelerate());
@@ -53,29 +61,32 @@ app.get("/expenses/:userId", async (c) => {
     const expenses = await prisma.expense.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
-      omit: {
-        paymentMethodId: true,
-        categoryId: true,
-        createdAt: true,
-        updatedAt: true,
-        userId: true
-      },
-      include: {
+      select: {
+        id: true,
+        date: true,
+        amount: true,
+        currency: true,
+        type: true,
+        description: true,
         category: {
           select: {
-            name: true
+            name: true,
+            color: true,
+            icon: true
           }
-        }, paymentMethod: {
+        },
+        paymentMethod: {
           select: {
-            name: true
+            name: true,
+            icon: true
           }
         }
-      },
+      }
     });
 
     return c.json(expenses);
   } catch (error) {
-
+    return c.json({ error: "Failed to fetch expenses" }, 500);
   }
 });
 
@@ -135,6 +146,84 @@ app.post("/users", async (c) => {
       { error: error instanceof Error ? error.message : "Unknown error" },
       400
     );
+  }
+});
+
+// Get user preferences
+app.get("/users/:userId/preferences", async (c) => {
+  const userId = c.req.param("userId");
+
+  try {
+    // check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    const preferences = await prisma.userPreferences.findUnique({
+      where: { userId },
+    });
+
+    if (!preferences) {
+      // add default preferences if they don't exist
+      const defaultPreferences = await prisma.userPreferences.create({
+        data: {
+          userId,
+        },
+      });
+
+      return c.json(defaultPreferences);
+    }
+
+    return c.json(preferences);
+  } catch (error) {
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "An unexpected error occurred" }, 500);
+  }
+});
+
+// Update user preferences
+app.patch("/users/:userId/preferences", async (c) => {
+  const userId = c.req.param("userId");
+
+  try {
+    const body = await c.req.json();
+
+    // Validate input
+    const validatedData = UserPreferencesSchema.parse(body);
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    const updatedPreferences = await prisma.userPreferences.upsert({
+      where: { userId },
+      create: {
+        ...validatedData,
+        userId,
+      },
+      update: validatedData,
+    });
+
+    return c.json(updatedPreferences);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return c.json({ error: "Invalid preferences data", details: error.errors }, 400);
+    }
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "An unexpected error occurred" }, 500);
   }
 });
 
