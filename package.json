@@ -14,7 +14,7 @@
     "reset": "prisma migrate reset"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "tsup ./prisma/seed.ts"
   },
   "keywords": [
     "expense",
@@ -31,13 +31,16 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.18.0",
     "@types/node": "^22.10.7",
     "eslint": "9.18.0",
+    "globals": "^15.14.0",
     "prisma": "^6.2.1",
     "ts-node": "^10.9.2",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0",
     "vitest": "^3.0.2"
   }
 }
