@@ -8,7 +8,9 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsup src/index.ts",
     "lint": "eslint src/**/*.ts",
-    "test": "vitest"
+    "test": "vitest",
+    "seed": "ts-node prisma/seed.ts"
+
   },
   "keywords": [
     "expense",
