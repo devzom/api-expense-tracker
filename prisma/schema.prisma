@@ -7,46 +7,75 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum ExpenseType {
+  EXPENSE
+  INCOME
+}
+
+enum Currency {
+  USD
+  EUR
+  GBP
+  PLN
+}
+
 model Expense {
   id              String         @id @default(uuid())
-  date            DateTime       @default(now())
   amount          Float
-  description     String?
-  category        Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId      String         @map("category_id")
-  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  currency        Currency       @default(USD)
+  type            ExpenseType    @default(EXPENSE)
+  description     String?        @db.Text
+  category        Category?      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryId      String?        @map("category_id")
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
   paymentMethodId String?        @map("payment_method_id")
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String         @map("user_id")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
 
   @@index([categoryId])
   @@index([paymentMethodId])
   @@index([userId])
+  @@index([type])
   @@map("expenses")
 }
 
 model Category {
-  id       String    @id @default(uuid())
-  name     String    @unique
-  expenses Expense[]
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?   @db.Text
+  color       String?   @db.VarChar(7) // For hex color codes
+  icon        String?   @db.VarChar(50)
+  expenses    Expense[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("categories")
 }
 
 model PaymentMethod {
-  id       String    @id @default(uuid())
-  name     String    @unique
-  expenses Expense[]
+  id        String    @id @default(uuid())
+  name      String    @unique
+  icon      String?   @db.VarChar(50)
+  isActive  Boolean   @default(true) @map("is_active")
+  expenses  Expense[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   @@map("payment_methods")
 }
 
 model User {
-  id       String    @id @default(uuid())
-  email    String    @unique
-  name     String
-  surname  String?
-  expenses Expense[]
+  id              String    @id @default(uuid())
+  email           String    @unique
+  name            String    @db.VarChar(100)
+  surname         String?   @db.VarChar(100)
+  avatar          String?   @db.Text
+  defaultCurrency Currency  @default(USD) @map("default_currency")
+  expenses        Expense[]
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@map("users")
 }

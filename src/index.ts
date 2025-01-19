@@ -32,7 +32,7 @@ app.get("/", (c) => c.text("Healthcheck of expenses-tracker!"));
 app.post("/expenses", async (c) => {
   try {
     const body = await c.req.json();
-    const validatedData = ExpenseSchema.parse(body);
+    // const validatedData = ExpenseSchema.parse(body);
 
     const expense = await prisma.expense.create({
       data: body,
@@ -40,9 +40,8 @@ app.post("/expenses", async (c) => {
 
     return c.json(expense, 201);
   } catch (error) {
-    return c.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      400
+    return c.body(
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 });
@@ -58,10 +57,7 @@ app.get("/expenses/:userId", async (c) => {
 
     return c.json(expenses);
   } catch (error) {
-    return c.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      500
-    );
+
   }
 });
 
