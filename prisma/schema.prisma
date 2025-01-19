@@ -15,17 +15,16 @@ enum SortOrder {
 // User
 
 model User {
-  id              String           @id @default(uuid())
-  email           String           @unique
-  name            String
-  surname         String?
-  avatar          String?
-  defaultCurrency Currency         @default(USD) @map("default_currency")
-  expenses        Expense[]
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
-  savedReports    SavedReport[]
-  preferences     UserPreferences?
+  id           String           @id @default(uuid())
+  email        String           @unique
+  name         String
+  surname      String?
+  avatar       String?
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+  expenses     Expense[]
+  savedReports SavedReport[]
+  preferences  UserPreferences?
 
   @@map("users")
 }
