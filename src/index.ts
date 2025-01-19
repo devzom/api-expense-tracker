@@ -27,6 +27,14 @@ const UserPreferencesSchema = z.object({
   timeFormat: z.enum(['12h', '24h']).optional(),
 });
 
+// User validation schema
+const UserCreateSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2).max(50),
+  surname: z.string().min(2).max(50).optional(),
+  avatar: z.string().url().optional(),
+});
+
 // Query parameters validation schema
 const ExpenseQuerySchema = z.object({
   page: z.string().regex(/^\d+$/).transform(Number).default('1'),
@@ -84,8 +92,8 @@ app.post("/expenses", async (c) => {
       data: {
         amount: validatedData.amount,
         description: validatedData.description,
-        currency: validatedData.currency || "USD",
-        type: validatedData.type || "EXPENSE",
+        currency: validatedData.currency,
+        type: validatedData.type,
         date: validatedData.date ? new Date(validatedData.date) : undefined,
         category: {
           connect: { id: category.id }
@@ -322,18 +330,40 @@ app.get("/expenses/users/:userId", async (c) => {
 app.post("/users", async (c) => {
   try {
     const body = await c.req.json();
+
+    // Validate user data
+    const validatedData = UserCreateSchema.parse(body);
+
+    // Check if email is already taken
+    const existingUser = await prisma.user.findUnique({
+      where: { email: validatedData.email }
+    });
+
+    if (existingUser) {
+      return c.json({ error: "Email already registered" }, 400);
+    }
+
+    // Create user with validated data
     const user = await prisma.user.create({
-      data: {
-        email: body.email,
-        name: body.name,
-      },
+      data: validatedData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        surname: true,
+        avatar: true,
+        createdAt: true
+      }
     });
 
     return c.json(user, 201);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return c.json({ error: "Invalid user data", details: error.errors }, 400);
+    }
     return c.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
-      400
+      500
     );
   }
 });
