@@ -30,6 +30,8 @@ export const UserCreateSchema = z.object({
   avatar: z.string().url().optional(),
 });
 
+export const UserUpdateSchema = UserCreateSchema.omit({ email: true });
+
 // Query parameters validation schema
 export const ExpenseQuerySchema = z.object({
   page: z.string().regex(/^\d+$/).transform(Number).default('1'),
