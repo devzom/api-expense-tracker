@@ -113,6 +113,24 @@ export const updateUserPreferences = async (c: Context) => {
   }
 };
 
+export const getUser = async (c: Context) => {
+  const userId = c.req.param("userId");
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) return c.json({ error: "User not found" }, 404);
+
+    return c.json(user);
+  } catch (error) {
+    if (error instanceof Error) return c.json({ error: error.message }, 500);
+
+    return c.json({ error: "An unexpected error occurred" }, 500);
+  }
+};
+
 export const getUsers = async (c: Context) => {
   try {
     const users = await prisma.user.findMany();
