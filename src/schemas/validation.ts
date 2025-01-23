@@ -41,6 +41,7 @@ export const ExpenseQuerySchema = z.object({
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   category: z.string().optional(),
+  paymentMethod: z.enum(['cash', 'card', 'transfer']).optional(),
   minAmount: z.string().regex(/^\d+$/).transform(Number).optional(),
   maxAmount: z.string().regex(/^\d+$/).transform(Number).optional(),
 }).merge(ExpenseSchema.pick({ type: true, currency: true }));

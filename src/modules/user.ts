@@ -1,22 +1,17 @@
 import { Context } from "hono";
 import { UserCreateSchema, UserPreferencesSchema, UserUpdateSchema } from "../schemas/validation";
-import { z } from "zod";
 import prisma from "../client";
 import { userIdentifier } from "../constans";
-
+import { handleError, NotFoundError } from "../utils/error-handler";
 
 export const getUsers = async (c: Context) => {
   try {
     const users = await prisma.user.findMany();
     return c.json(users);
   } catch (error) {
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 500);
-    }
-    return c.json({ error: "An unexpected error occurred" }, 500);
+    return handleError(c, error);
   }
 };
-
 
 export const createUser = async (c: Context) => {
   try {
@@ -28,7 +23,7 @@ export const createUser = async (c: Context) => {
     });
 
     if (existingUser) {
-      return c.json({ error: "Email already registered" }, 400);
+      throw new Error("Email already registered");
     }
 
     const user = await prisma.user.create({
@@ -45,68 +40,61 @@ export const createUser = async (c: Context) => {
 
     return c.json(user, 201);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: "Invalid user data", details: error.errors }, 400);
-    }
-    return c.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      500
-    );
+    return handleError(c, error);
   }
 };
 
 export const getUser = async (c: Context) => {
-  const userId = c.req.param(userIdentifier);
-
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
-
-    if (!user) return c.json({ error: "User not found" }, 404);
-
-    return c.json(user);
-  } catch (error) {
-    if (error instanceof Error) return c.json({ error: error.message }, 500);
-
-    return c.json({ error: "An unexpected error occurred" }, 500);
-  }
-};
-
-export const updateUser = async (c: Context) => {
-  const userId = c.req.param(userIdentifier);
-
-  try {
-    const body = await c.req.json();
-
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: UserUpdateSchema.parse(body)
-    });
-
-    return c.json(user);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: "Invalid user data", details: error.errors }, 400);
-    }
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 500);
-    }
-    return c.json({ error: "An unexpected error occurred" }, 500);
-  }
-}
-
-
-export const getUserPreferences = async (c: Context) => {
-  const userId = c.req.param(userIdentifier);
-
-  try {
+    const userId = c.req.param(userIdentifier);
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
 
     if (!user) {
-      return c.json({ error: "User not found" }, 404);
+      throw new NotFoundError("User");
+    }
+
+    return c.json(user);
+  } catch (error) {
+    return handleError(c, error);
+  }
+};
+
+export const updateUser = async (c: Context) => {
+  try {
+    const userId = c.req.param(userIdentifier);
+    const body = await c.req.json();
+    const validatedData = UserUpdateSchema.parse(body);
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: validatedData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        surname: true,
+        avatar: true,
+        updatedAt: true
+      }
+    });
+
+    return c.json(user);
+  } catch (error) {
+    return handleError(c, error);
+  }
+};
+
+export const getUserPreferences = async (c: Context) => {
+  try {
+    const userId = c.req.param(userIdentifier);
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      throw new NotFoundError("User");
     }
 
     const preferences = await prisma.userPreferences.findUnique({
@@ -126,27 +114,23 @@ export const getUserPreferences = async (c: Context) => {
 
     return c.json(preferences);
   } catch (error) {
-    if (error instanceof Error) return c.json({ error: error.message }, 500);
-
-    return c.json({ error: "An unexpected error occurred" }, 500);
+    return handleError(c, error);
   }
 };
 
 export const updateUserPreferences = async (c: Context) => {
-  const userId = c.req.param(userIdentifier);
-
   try {
+    const userId = c.req.param(userIdentifier);
     const body = await c.req.json();
+    const validatedData = UserPreferencesSchema.parse(body);
 
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
 
     if (!user) {
-      return c.json({ error: "User not found" }, 404);
+      throw new NotFoundError("User");
     }
-
-    const validatedData = UserPreferencesSchema.parse(body);
 
     const updatedPreferences = await prisma.userPreferences.upsert({
       where: { userId },
@@ -159,12 +143,6 @@ export const updateUserPreferences = async (c: Context) => {
 
     return c.json(updatedPreferences);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: "Invalid preferences data", details: error.errors }, 400);
-    }
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 500);
-    }
-    return c.json({ error: "An unexpected error occurred" }, 500);
+    return handleError(c, error);
   }
 };

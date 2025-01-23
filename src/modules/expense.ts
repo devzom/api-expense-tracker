@@ -3,6 +3,7 @@ import { ExpenseSchema, ExpenseQuerySchema } from "../schemas/validation";
 import { z } from "zod";
 import prisma from "../client";
 import { userIdentifier } from "../constans";
+import { handleError } from "../utils/error-handler";
 
 export const createExpense = async (c: Context) => {
   try {
@@ -63,13 +64,7 @@ export const createExpense = async (c: Context) => {
 
     return c.json(expense, 201);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: "Invalid expense data", details: error.errors }, 400);
-    }
-    return c.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      500
-    );
+    return handleError(c, error)
   }
 };
 
@@ -102,13 +97,7 @@ export const updateExpense = async (c: Context) => {
 
     return c.json(expense);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: "Invalid expense data", details: error.errors }, 400);
-    }
-    return c.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      400
-    );
+    handleError(c, error);
   }
 };
 
@@ -122,10 +111,7 @@ export const deleteExpense = async (c: Context) => {
 
     return c.json({ message: "Expense deleted successfully" });
   } catch (error) {
-    return c.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      500
-    );
+    return handleError(c, error);
   }
 };
 
@@ -158,16 +144,11 @@ export const getExpense = async (c: Context) => {
       }
     });
 
-    if (!expense) {
-      return c.json({ error: "Expense not found" }, 404);
-    }
+    if (!expense) return c.json({ error: "Expense not found" }, 404);
 
     return c.json(expense);
   } catch (error) {
-    return c.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      500
-    );
+    return handleError(c, error);
   }
 };
 
@@ -275,10 +256,7 @@ export const getUserExpenses = async (c: Context) => {
       }
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: "Invalid query parameters", details: error.errors }, 400);
-    }
-    return c.json({ error: "Failed to fetch expenses" }, 500);
+    return handleError(c, error);
   }
 };
 
@@ -300,7 +278,6 @@ export const getUserSummary = async (c: Context) => {
       count: expenses._count.id
     });
   } catch (error) {
-    if (error instanceof Error) return c.json({ error: error.message }, 500);
-    return c.json({ error: "An unexpected error occurred" }, 500);
+    return handleError(c, error);
   }
 }
