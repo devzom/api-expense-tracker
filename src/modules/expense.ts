@@ -296,8 +296,8 @@ export const getUserSummary = async (c: Context) => {
     if (!expenses) return c.json({ error: "User not found" }, 404);
 
     return c.json({
-      totalExpenses: expenses._sum.amount,
-      expensesCount: expenses._count.id
+      total: expenses._sum.amount,
+      count: expenses._count.id
     });
   } catch (error) {
     if (error instanceof Error) return c.json({ error: error.message }, 500);
