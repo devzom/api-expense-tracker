@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { createExpense, updateExpense, deleteExpense, getExpense, getUserExpenses } from "../modules/expense";
+import { createExpense, updateExpense, deleteExpense, getExpense, getUserExpenses, getUserSummary } from "../modules/expense";
 import { resourceAccessMiddleware } from "../middlewares/auth";
 
 const app = new Hono(
@@ -15,5 +15,5 @@ app.delete("/:id", deleteExpense);
 
 // Get user expenses with pagination and filters
 app.get("/users/:user", getUserExpenses);
-
+app.get("/users/:user/summary", getUserSummary);
 export default app;

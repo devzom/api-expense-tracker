@@ -2,6 +2,7 @@ import { Context } from "hono";
 import { ExpenseSchema, ExpenseQuerySchema } from "../schemas/validation";
 import { z } from "zod";
 import prisma from "../client";
+import { userIdentifier } from "../constans";
 
 export const createExpense = async (c: Context) => {
   try {
@@ -171,7 +172,7 @@ export const getExpense = async (c: Context) => {
 };
 
 export const getUserExpenses = async (c: Context) => {
-  const userId = c.req.param("userId");
+  const userId = c.req.param(userIdentifier);
 
   try {
     const query = c.req.query();
@@ -280,3 +281,26 @@ export const getUserExpenses = async (c: Context) => {
     return c.json({ error: "Failed to fetch expenses" }, 500);
   }
 };
+
+
+export const getUserSummary = async (c: Context) => {
+  const userId = c.req.param(userIdentifier);
+
+  try {
+    const expenses = await prisma.expense.aggregate({
+      where: { userId },
+      _sum: { amount: true },
+      _count: { id: true }
+    });
+
+    if (!expenses) return c.json({ error: "User not found" }, 404);
+
+    return c.json({
+      totalExpenses: expenses._sum.amount,
+      expensesCount: expenses._count.id
+    });
+  } catch (error) {
+    if (error instanceof Error) return c.json({ error: error.message }, 500);
+    return c.json({ error: "An unexpected error occurred" }, 500);
+  }
+}

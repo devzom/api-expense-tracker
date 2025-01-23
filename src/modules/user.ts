@@ -2,6 +2,7 @@ import { Context } from "hono";
 import { UserCreateSchema, UserPreferencesSchema, UserUpdateSchema } from "../schemas/validation";
 import { z } from "zod";
 import prisma from "../client";
+import { userIdentifier } from "../constans";
 
 
 export const getUsers = async (c: Context) => {
@@ -22,7 +23,6 @@ export const createUser = async (c: Context) => {
     const body = await c.req.json();
     const validatedData = UserCreateSchema.parse(body);
 
-    // Check if email is already taken
     const existingUser = await prisma.user.findUnique({
       where: { email: validatedData.email }
     });
@@ -56,7 +56,7 @@ export const createUser = async (c: Context) => {
 };
 
 export const getUser = async (c: Context) => {
-  const userId = c.req.param("userId");
+  const userId = c.req.param(userIdentifier);
 
   try {
     const user = await prisma.user.findUnique({
@@ -74,7 +74,7 @@ export const getUser = async (c: Context) => {
 };
 
 export const updateUser = async (c: Context) => {
-  const userId = c.req.param("userId");
+  const userId = c.req.param(userIdentifier);
 
   try {
     const body = await c.req.json();
@@ -98,7 +98,7 @@ export const updateUser = async (c: Context) => {
 
 
 export const getUserPreferences = async (c: Context) => {
-  const userId = c.req.param("userId");
+  const userId = c.req.param(userIdentifier);
 
   try {
     const user = await prisma.user.findUnique({
@@ -114,7 +114,7 @@ export const getUserPreferences = async (c: Context) => {
     });
 
     if (!preferences) {
-      // add default preferences if they don't exist
+      // add default preferences
       const defaultPreferences = await prisma.userPreferences.create({
         data: {
           userId,
@@ -126,15 +126,14 @@ export const getUserPreferences = async (c: Context) => {
 
     return c.json(preferences);
   } catch (error) {
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 500);
-    }
+    if (error instanceof Error) return c.json({ error: error.message }, 500);
+
     return c.json({ error: "An unexpected error occurred" }, 500);
   }
 };
 
 export const updateUserPreferences = async (c: Context) => {
-  const userId = c.req.param("userId");
+  const userId = c.req.param(userIdentifier);
 
   try {
     const body = await c.req.json();
