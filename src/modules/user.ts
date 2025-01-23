@@ -45,8 +45,9 @@ export const createUser = async (c: Context) => {
 };
 
 export const getUser = async (c: Context) => {
+  const userId = c.req.param(userIdentifier);
+
   try {
-    const userId = c.req.param(userIdentifier);
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
@@ -62,9 +63,10 @@ export const getUser = async (c: Context) => {
 };
 
 export const updateUser = async (c: Context) => {
+  const userId = c.req.param(userIdentifier);
+  const body = await c.req.json();
+
   try {
-    const userId = c.req.param(userIdentifier);
-    const body = await c.req.json();
     const validatedData = UserUpdateSchema.parse(body);
 
     const user = await prisma.user.update({
@@ -87,8 +89,9 @@ export const updateUser = async (c: Context) => {
 };
 
 export const getUserPreferences = async (c: Context) => {
+  const userId = c.req.param(userIdentifier);
+
   try {
-    const userId = c.req.param(userIdentifier);
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
@@ -119,18 +122,17 @@ export const getUserPreferences = async (c: Context) => {
 };
 
 export const updateUserPreferences = async (c: Context) => {
+  const userId = c.req.param(userIdentifier);
+  const body = await c.req.json();
+
   try {
-    const userId = c.req.param(userIdentifier);
-    const body = await c.req.json();
     const validatedData = UserPreferencesSchema.parse(body);
 
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
 
-    if (!user) {
-      throw new NotFoundError("User");
-    }
+    if (!user) throw new NotFoundError("User");
 
     const updatedPreferences = await prisma.userPreferences.upsert({
       where: { userId },

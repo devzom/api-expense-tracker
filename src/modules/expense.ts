@@ -4,6 +4,7 @@ import { z } from "zod";
 import prisma from "../client";
 import { userIdentifier } from "../constans";
 import { handleError } from "../utils/error-handler";
+import { resourceOwnerId } from "../middlewares/auth";
 
 export const createExpense = async (c: Context) => {
   try {
@@ -76,7 +77,7 @@ export const updateExpense = async (c: Context) => {
     const validatedData = ExpenseSchema.partial().parse(body);
 
     const expense = await prisma.expense.update({
-      where: { id },
+      where: { id, user: { id: resourceOwnerId(c) } },
       data: validatedData,
       include: {
         category: {
@@ -106,7 +107,13 @@ export const deleteExpense = async (c: Context) => {
 
   try {
     await prisma.expense.delete({
-      where: { id },
+      where: {
+        id, user: {
+          id: {
+            equals: resourceOwnerId(c)
+          }
+        }
+      },
     });
 
     return c.json({ message: "Expense deleted successfully" });
@@ -120,7 +127,13 @@ export const getExpense = async (c: Context) => {
 
   try {
     const expense = await prisma.expense.findUnique({
-      where: { id },
+      where: {
+        id, user: {
+          id: {
+            equals: resourceOwnerId(c)
+          }
+        }
+      },
       select: {
         id: true,
         date: true,
@@ -153,10 +166,9 @@ export const getExpense = async (c: Context) => {
 };
 
 export const getUserExpenses = async (c: Context) => {
-  const userId = c.req.param(userIdentifier);
+  const query = c.req.query();
 
   try {
-    const query = c.req.query();
     const {
       page,
       limit,
@@ -172,7 +184,9 @@ export const getUserExpenses = async (c: Context) => {
     } = ExpenseQuerySchema.parse(query);
 
     const skip = (page - 1) * limit;
-    const whereClause: any = { userId };
+    const whereClause: any = {
+
+    };
 
     if (startDate || endDate) {
       whereClause.date = {};
@@ -203,7 +217,13 @@ export const getUserExpenses = async (c: Context) => {
     });
 
     const expenses = await prisma.expense.findMany({
-      where: whereClause,
+      where: {
+        user: {
+          id: {
+            equals: resourceOwnerId(c)
+          }
+        }, ...whereClause
+      },
       orderBy: {
         [sortBy]: sortOrder
       },
@@ -266,7 +286,13 @@ export const getUserSummary = async (c: Context) => {
 
   try {
     const expenses = await prisma.expense.aggregate({
-      where: { userId },
+      where: {
+        userId, user: {
+          id: {
+            equals: resourceOwnerId(c)
+          }
+        }
+      },
       _sum: { amount: true },
       _count: { id: true }
     });
