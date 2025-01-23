@@ -5,9 +5,46 @@ import { userIdentifier } from "../constans";
 import { handleError, NotFoundError } from "../utils/error-handler";
 
 export const getUsers = async (c: Context) => {
+  const page = Number(c.req.query('page')) || 1;
+  const limit = Number(c.req.query('limit')) || 10;
+  const skip = (page - 1) * limit;
+
   try {
-    const users = await prisma.user.findMany();
-    return c.json(users);
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        take: limit,
+        skip,
+        orderBy: {
+          createdAt: 'desc'
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          surname: true,
+          avatar: true,
+          createdAt: true
+        }
+      }),
+      prisma.user.count()
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return c.json({
+      data: users,
+      metadata: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage,
+        hasPrevPage
+      }
+    });
   } catch (error) {
     return handleError(c, error);
   }
