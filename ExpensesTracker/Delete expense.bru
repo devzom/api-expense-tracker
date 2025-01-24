@@ -1,0 +1,21 @@
+meta {
+  name: Delete expense
+  type: http
+  seq: 11
+}
+
+delete {
+  url: http://localhost:3000/expenses/d8dfdad9-b71b-493a-be55-e79ec8089c23
+  body: none
+  auth: inherit
+}
+
+headers {
+  X-User-Id: {{userId}}
+}
+
+body:json {
+  {
+    "id": "d8dfdad9-b71b-493a-be55-e79ec8089c23"
+  }
+}
