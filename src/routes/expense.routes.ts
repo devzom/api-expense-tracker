@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { createExpense, updateExpense, deleteExpense, getExpense, getUserExpenses, getUserSummary } from "../modules/expense";
+import { createExpense, updateExpense, deleteExpense, getExpense, getExpensesByUser, getExpensesSummaryByUser } from "../modules/expenses";
 import { resourceAccessMiddleware } from "../middlewares/auth";
 
 const app = new Hono(
@@ -11,8 +11,8 @@ app.use("*", resourceAccessMiddleware);
 app.post("/", createExpense);
 
 // Get user expenses with pagination and filters
-app.get(`/`, getUserExpenses);
-app.get(`/summary`, getUserSummary);
+app.get(`/`, getExpensesByUser);
+app.get(`/summary`, getExpensesSummaryByUser);
 
 app.get("/:id", getExpense);
 app.put("/:id", updateExpense);
