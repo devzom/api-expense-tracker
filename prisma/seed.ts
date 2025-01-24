@@ -29,10 +29,10 @@ async function main() {
 
     const expensesCategories = await Promise.all([
         prisma.category.upsert({
-            where: { name: 'food' },
+            where: { name: 'groceries' },
             update: {},
             create: {
-                name: 'food',
+                name: 'groceries',
             },
         }),
         prisma.category.upsert({
@@ -59,6 +59,8 @@ async function main() {
             create: {
                 email: 'alice@prisma.io',
                 name: 'Alice',
+                surname: 'Smith',
+                avatar: 'https://domain/assets/profile-1-alice.png',
                 preferences: {
                     create: {
                         notificationsEnabled: true,
@@ -66,18 +68,20 @@ async function main() {
                         language: 'en',
                         dateFormat: 'dd/MM/yyyy',
                         timeFormat: '24h',
-                        currency: 'EUR'
+                        currency: 'USD',
                     }
                 },
                 expenses: {
                     create: [
                         {
                             amount: 10.99,
-                            description: 'Pizza',
-                            date: new Date(),
+                            description: 'pizza',
+                            type: 'expense',
+                            currency: 'USD',
+                            createdAt: new Date('2025-01-02T06:22:33.444Z'),
                             category: {
                                 connect: {
-                                    name: 'food'
+                                    name: 'groceries'
                                 }
                             },
                             paymentMethod: {
@@ -87,9 +91,11 @@ async function main() {
                             }
                         },
                         {
-                            amount: 249.99,
+                            amount: 149.99,
                             description: 'Electricity',
-                            date: new Date(),
+                            date: new Date('2025-01-31T06:22:33.444Z'),
+                            type: 'expense',
+                            currency: 'USD',
                             category: {
                                 connect: {
                                     name: 'bills'
@@ -106,6 +112,18 @@ async function main() {
             },
         })
     ])
+
+    const budget = await prisma.budget.create({
+        data: {
+            userId: users[0].id,
+            title: 'Monthly Groceries Budget',
+            amount: 500,
+            currency: 'USD',
+            startDate: new Date('2025-01-01T00:00:00Z'),
+            endDate: new Date('2025-01-31T23:59:59Z'),
+            category: 'groceries'
+        }
+    })
 
     console.log(users, paymentsMethod, expensesCategories)
 }

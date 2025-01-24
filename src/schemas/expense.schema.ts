@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Currency, ExpenseType, WeekDay } from "@prisma/client";
+import { Currency, ExpenseType } from "@prisma/client";
 
 
 // Expense validation schemas
