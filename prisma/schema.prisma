@@ -25,6 +25,7 @@ model User {
   expenses     Expense[]
   savedReports SavedReport[]
   preferences  UserPreferences?
+  budgets      Budget[]
 
   @@map("users")
 }
@@ -142,4 +143,21 @@ model SavedReport {
   updatedAt DateTime   @updatedAt @map("updated_at")
 
   @@map("saved_reports")
+}
+
+model Budget {
+  id        String   @id @default(uuid())
+  title     String
+  amount    Float
+  currency  Currency @default(USD)
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  category  String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("budgets")
 }

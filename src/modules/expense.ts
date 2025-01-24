@@ -1,15 +1,25 @@
 import { Context } from "hono";
 import { ExpenseSchema, ExpenseQuerySchema } from "../schemas/validation";
-import { z } from "zod";
 import prisma from "../client";
 import { userIdentifier } from "../constans";
 import { handleError } from "../utils/error-handler";
 import { resourceOwnerId } from "../middlewares/auth";
+import { checkBudgetLimit } from "./budget";
+import { Currency } from "@prisma/client";
 
 export const createExpense = async (c: Context) => {
   try {
     const body = await c.req.json();
     const validatedData = ExpenseSchema.parse(body);
+
+    // Check budget before creating expense
+    const expenseDate = validatedData.date ? new Date(validatedData.date) : new Date();
+    const budgetStatus = await checkBudgetLimit(
+      validatedData.userId,
+      validatedData.amount,
+      validatedData.currency || Currency.USD,
+      expenseDate
+    );
 
     // Find or create category
     const category = await prisma.category.upsert({
@@ -34,7 +44,7 @@ export const createExpense = async (c: Context) => {
       data: {
         amount: validatedData.amount,
         description: validatedData.description,
-        currency: validatedData.currency,
+        currency: validatedData.currency || Currency.USD,
         type: validatedData.type,
         date: validatedData.date ? new Date(validatedData.date) : undefined,
         category: {
@@ -63,9 +73,27 @@ export const createExpense = async (c: Context) => {
       }
     });
 
-    return c.json(expense, 201);
+
+    const budgetWarning = budgetStatus.exceeded ? {
+      message: "Budget limit exceeded!",
+      budget: Number(budgetStatus.budget?.toFixed(2)),
+      spent: Number(budgetStatus.newTotal?.toFixed(2)),
+      remaining: Number(((budgetStatus?.budget || 0) - (budgetStatus?.newTotal || 0)).toFixed(2))
+    } : null
+
+    return c.json({
+      expense: {
+        id: expense.id,
+        amount: expense.amount,
+        currency: expense.currency,
+        description: expense.description,
+        category: expense.category?.name,
+        paymentMethod: expense.paymentMethod?.name,
+      },
+      budgetWarning
+    }, 201);
   } catch (error) {
-    return handleError(c, error)
+    return handleError(c, error);
   }
 };
 

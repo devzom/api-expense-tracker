@@ -5,13 +5,15 @@ meta {
 }
 
 get {
-  url: http://localhost:3000/expenses?type=expense
+  url: http://localhost:3000/expenses?type=expense&startDate=2025-01-02T18:07:03.881Z
   body: none
   auth: inherit
 }
 
 params:query {
   type: expense
+  startDate: 2025-01-02T18:07:03.881Z
+  ~endDate: 2025-01-23T18:07:03.881Z
   ~sortOrder: desc
   ~category: food
   ~minAmount: 10

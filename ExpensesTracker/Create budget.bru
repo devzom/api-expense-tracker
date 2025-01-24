@@ -1,0 +1,23 @@
+meta {
+  name: Create budget
+  type: http
+  seq: 10
+}
+
+post {
+  url: http://localhost:3000/budget
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "userId": "{{userId}}",
+    "title": "Monthly Groceries Budget",
+    "amount": 200,
+    "currency": "USD",
+    "startDate": "2025-01-01T00:00:00Z",
+    "endDate": "2025-01-31T23:59:59Z",
+    "category": "groceries"
+  }
+}

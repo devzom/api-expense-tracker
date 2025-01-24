@@ -32,6 +32,16 @@ export const ExpenseSchema = z.object({
   date: z.string().datetime().optional()
 });
 
+export const BudgetSchema = z.object({
+  userId: z.string().uuid(),
+  title: z.string().min(3).max(50),
+  amount: z.number().positive(),
+  currency: z.nativeEnum(Currency),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime(),
+  category: z.string().optional(),
+});
+
 // Query parameters validation schema
 export const ExpenseQuerySchema = z.object({
   page: z.string().regex(/^\d+$/).transform(Number).default('1'),
