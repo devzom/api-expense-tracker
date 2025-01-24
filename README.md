@@ -18,11 +18,11 @@ Expense tracking API built with Hono, SQLite + Prisma, and TypeScript and basic 
 - [x] Reporting capabilities
 - [x] User customization options
 - [x] Flexible categorization system
-- [ ] Budget tracking and management
-- [ ] Recurring expense automation
-- [ ] Savings goals tracking
+- [x] Budget tracking and management
 - [ ] Receipt/document management
+- [ ] Savings goals tracking
 - [ ] Expense sharing capabilities
+- [ ] Recurring expense automation
 
 ## Prerequisites
 
