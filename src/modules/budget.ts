@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { BudgetSchema } from "../schemas/validation";
+import { BudgetSchema } from "../schemas/budget.schema";
 import prisma from "../client";
 import { handleError } from "../utils/error-handler";
 import { Currency } from "@prisma/client";

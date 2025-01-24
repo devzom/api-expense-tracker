@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { ExpenseSchema, ExpenseQuerySchema } from "../schemas/validation";
+import { ExpenseSchema, ExpenseQuerySchema } from "../schemas/expense.schema";
 import prisma from "../client";
 import { userIdentifier } from "../constans";
 import { handleError } from "../utils/error-handler";

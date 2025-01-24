@@ -7,7 +7,16 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@schema": ["./src/schemas/*"],
+      "@modules": ["./src/modules/*"],
+      "@utils": ["./src/utils/*"],
+      "@constans": ["./src/constans/*"],
+      "@middlewares": ["./src/middlewares/*"],
+      "@routes": ["./src/routes/*"],
+    },
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

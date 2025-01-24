@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { UserCreateSchema, UserPreferencesSchema, UserUpdateSchema } from "../schemas/validation";
+import { UserCreateSchema, UserPreferencesSchema, UserUpdateSchema } from "../schemas/user.schema";
 import prisma from "../client";
 import { userIdentifier } from "../constans";
 import { handleError, NotFoundError } from "../utils/error-handler";
