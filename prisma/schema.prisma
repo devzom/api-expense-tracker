@@ -99,6 +99,7 @@ model Category {
   color       String?
   icon        String?
   expenses    Expense[]
+  budgets     Budget[]
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
@@ -146,17 +147,19 @@ model SavedReport {
 }
 
 model Budget {
-  id        String   @id @default(uuid())
-  title     String
-  amount    Float
-  currency  Currency @default(USD)
-  startDate DateTime @map("start_date")
-  endDate   DateTime @map("end_date")
-  category  String?
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         String    @id @default(uuid())
+  title      String
+  amount     Float
+  currency   Currency  @default(USD)
+  startDate  DateTime  @map("start_date")
+  endDate    DateTime  @map("end_date")
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?   @map("category_id")
+  isOverall  Boolean   @default(false) @map("is_overall")
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String    @map("user_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
 
   @@index([userId])
   @@map("budgets")
