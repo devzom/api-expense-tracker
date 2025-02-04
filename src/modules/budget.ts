@@ -92,7 +92,13 @@ export const getBudgetStatus = async (c: Context) => {
         const budgetId = c.req.param('id');
         const budget = await prisma.budget.findUnique({
             where: { id: budgetId },
-            include: { category: true }
+            include: {
+                category: {
+                    select: {
+                        name: true,
+                    }
+                }
+            },
         });
 
         if (!budget) {
@@ -109,6 +115,15 @@ export const getBudgetStatus = async (c: Context) => {
                 },
                 ...(budget.categoryId ? { categoryId: budget.categoryId } : {}),
                 type: 'expense'
+            },
+            select: {
+                amount: true,
+                currency: true,
+                category: {
+                    select: {
+                        name: true,
+                    }
+                }
             }
         });
 

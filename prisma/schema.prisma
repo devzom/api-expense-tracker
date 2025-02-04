@@ -162,5 +162,6 @@ model Budget {
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
   @@index([userId])
+  @@index([categoryId])
   @@map("budgets")
 }
