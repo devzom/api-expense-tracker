@@ -24,17 +24,16 @@ Expense tracking API built with Hono, SQLite + Prisma, and TypeScript and basic 
 - [ ] Expense sharing capabilities
 - [ ] Recurring expense automation
 
-### Security
+### [Budget Management](./docs/budget.md)
 
-- Rate limiting, limits requests to 100 requests per minute per IP address, return 429.
-  Protect all routes with rate limiting by Hono, it's in-memory storage (resets on server restart).
-
-### Performance
+### Performance Optimizations
 
 - Response compression using Hono's built-in compress middleware
   - Automatically compresses responses using gzip
   - Improves bandwidth usage and loading times
   - Smart compression that respects client capabilities
+
+### [Security](./docs/security.md)
 
 ## Prerequisites
 
